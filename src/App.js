@@ -39,23 +39,23 @@ const App = () => {
     }
   };
 
-const connectWallet = async () => {
-  try{
-    const {ethereum} = window; 
-    if (!ethereum) {
-      alert("get MetaMask");
-      return; 
+  const connectWallet = async () => {
+    try {
+      const { ethereum } = window;
+      if (!ethereum) {
+        alert("get MetaMask");
+        return;
+      }
+
+      const accounts = await ethereum.request({
+        method: "eth_requestAccounts",
+      });
+      console.log("Connected", accounts[0]);
+      setAccount(accounts[0]);
+    } catch (error) {
+      console.log(error);
     }
-
-    const accounts = await ethereum.request({method: 'eth_requestAccounts',})
-    console.log("Connected", accounts[0]);
-    setAccount(accounts[0]);
-  } catch (error) {
-    console.log(error)
-  }
-}
-
-
+  };
 
   useEffect(() => {
     checkIfWalletIsConnected();
@@ -72,6 +72,16 @@ const connectWallet = async () => {
               src="https://64.media.tumblr.com/tumblr_mbia5vdmRd1r1mkubo1_500.gifv"
               alt="Monty Python Gif"
             />
+            {/*
+             * Button that we will use to trigger wallet connect
+             * Don't forget to add the onClick event to call your method!
+             */}
+            <button
+              className="cta-button connect-wallet-button"
+              onClick={connectWallet}
+            >
+              Connect Wallet to FIGHT
+            </button>
           </div>
         </div>
         <div className="footer-container">
