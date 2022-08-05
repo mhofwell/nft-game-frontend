@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import twitterLogo from "./assets/twitter-logo.svg";
 import "./App.css";
+import SelectCharacter from "./Components/SelectCharacter";
 
 // Constants
 const TWITTER_HANDLE = "_buildspace";
@@ -8,6 +9,7 @@ const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 
 const App = () => {
   const [account, setAccount] = useState(null);
+  const [characterNFT, setCharacterNFT] = useState(null);
 
   /*
    * Start by creating a new action that we will run on component load
@@ -39,6 +41,31 @@ const App = () => {
     }
   };
 
+  const renderContent = () => {
+    if (!account) {
+      return (
+        <div className="connect-wallet-container">
+          <img
+            src="https://64.media.tumblr.com/tumblr_mbia5vdmRd1r1mkubo1_500.gifv"
+            alt="Monty Python Gif"
+          />
+          {/*
+           * Button that we will use to trigger wallet connect
+           * Don't forget to add the onClick event to call your method!
+           */}
+          <button
+            className="cta-button connect-wallet-button"
+            onClick={connectWallet}
+          >
+            Connect Wallet to FIGHT
+          </button>
+        </div>
+      );
+    } else if (account && !characterNFT) {
+      return <SelectCharacter setCharacterNFT={setCharacterNFT} />;
+    }
+  };
+
   const connectWallet = async () => {
     try {
       const { ethereum } = window;
@@ -67,22 +94,7 @@ const App = () => {
         <div className="header-container">
           <p className="header gradient-text">⚔️ Metaverse Slayer ⚔️</p>
           <p className="sub-text">Team up to protect the Metaverse!</p>
-          <div className="connect-wallet-container">
-            <img
-              src="https://64.media.tumblr.com/tumblr_mbia5vdmRd1r1mkubo1_500.gifv"
-              alt="Monty Python Gif"
-            />
-            {/*
-             * Button that we will use to trigger wallet connect
-             * Don't forget to add the onClick event to call your method!
-             */}
-            <button
-              className="cta-button connect-wallet-button"
-              onClick={connectWallet}
-            >
-              Connect Wallet to FIGHT
-            </button>
-          </div>
+          {renderContent()}
         </div>
         <div className="footer-container">
           <img alt="Twitter Logo" className="twitter-logo" src={twitterLogo} />
