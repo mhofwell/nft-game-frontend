@@ -6,6 +6,8 @@ import "./SelectCharacter.css";
  */
 
 const SelectCharacter = ({ setCharacterNFT }) => {
+  const [character, setCharacter] = useState([]);
+  const [gameContract, setGameContract] = useState(null);
   return (
     <div className="select-character-container">
       <h2>Mint your HERO! Choose wisely. The Warlock awaits.</h2>
@@ -13,5 +15,4 @@ const SelectCharacter = ({ setCharacterNFT }) => {
   );
 };
 
-export default SelectCharacter; 
-
+export default SelectCharacter;
