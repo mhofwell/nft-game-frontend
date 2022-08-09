@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import twitterLogo from "./assets/twitter-logo.svg";
 import "./App.css";
-import SelectCharacter from "./Components/SelectCharacter/SelectCharacter.js";
+import SelectCharacter from "./Components/SelectCharacter";
 import { CONTRACT_ADDRESS, transformCharacterData } from "./constants";
 import GameContract from "./utils/GameContract.json";
 // Ethereum
@@ -84,7 +84,7 @@ const App = () => {
     try {
       const { ethereum } = window;
       if (!ethereum) {
-        alert("get MetaMask");
+        alert("You need to get MetaMask");
         return;
       }
 
@@ -116,7 +116,8 @@ const App = () => {
         GameContract.abi,
         signer
       );
-      const txn = await gameContract.checkIfUserHasNFT(); 
+      const txn = await gameContract.returnUsersNFT(); 
+      console.log(txn);
       if (txn.name) {
         console.log('User has the character NFT');
         setCharacterNFT(transformCharacterData(txn));
