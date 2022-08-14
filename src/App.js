@@ -4,6 +4,7 @@ import "./App.css";
 import SelectCharacter from "./Components/SelectCharacter";
 import { CONTRACT_ADDRESS, transformCharacterData } from "./constants";
 import GameContract from "./utils/GameContract.json";
+import Arena from "./Components/Arena";
 // Ethereum
 import { ethers } from "ethers";
 
@@ -75,8 +76,14 @@ const App = () => {
           </button>
         </div>
       );
+
     } else if (account && !characterNFT) {
+      
       return <SelectCharacter setCharacterNFT={setCharacterNFT} />;
+
+    } else if (account && characterNFT) {
+
+      return <Arena account={account} characterNFT={characterNFT} setCharacterNFT={setCharacterNFT} />;
     }
   };
 
@@ -116,19 +123,19 @@ const App = () => {
         GameContract.abi,
         signer
       );
-      const txn = await gameContract.returnUsersNFT(); 
+      const txn = await gameContract.returnUsersNFT();
       console.log(txn);
       if (txn.name) {
-        console.log('User has the character NFT');
+        console.log("User has the character NFT");
         setCharacterNFT(transformCharacterData(txn));
       } else {
-        console.log('No Character NFT Found');
+        console.log("No Character NFT Found");
       }
     };
 
     if (account) {
       console.log("Current Account", account);
-      fetchNFTMetadata(); 
+      fetchNFTMetadata();
     }
   }, [account]);
 
