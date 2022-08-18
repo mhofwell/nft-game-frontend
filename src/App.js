@@ -5,6 +5,7 @@ import SelectCharacter from "./Components/SelectCharacter";
 import { CONTRACT_ADDRESS, transformCharacterData } from "./constants";
 import GameContract from "./utils/GameContract.json";
 import Arena from "./Components/Arena";
+import LoadingIndicator from "./Components/LoadingIndicator";
 // Ethereum
 import { ethers } from "ethers";
 
@@ -13,8 +14,11 @@ const TWITTER_HANDLE = "_buildspace";
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 
 const App = () => {
+  // state
+
   const [account, setAccount] = useState(null);
   const [characterNFT, setCharacterNFT] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   /*
    * Start by creating a new action that we will run on component load
@@ -37,6 +41,7 @@ const App = () => {
 
       if (!ethereum) {
         console.log("No wallet detected!");
+        setIsLoading(false);
         return;
       } else {
         console.log("ETH object found.", ethereum);
@@ -54,9 +59,14 @@ const App = () => {
     } catch (error) {
       console.log(error);
     }
+    setIsLoading(false);
   };
 
   const renderContent = () => {
+    if (isLoading) {
+      return <LoadingIndicator />;
+    }
+
     if (!account) {
       return (
         <div className="connect-wallet-container">
@@ -76,14 +86,16 @@ const App = () => {
           </button>
         </div>
       );
-
     } else if (account && !characterNFT) {
-      
       return <SelectCharacter setCharacterNFT={setCharacterNFT} />;
-
     } else if (account && characterNFT) {
-
-      return <Arena account={account} characterNFT={characterNFT} setCharacterNFT={setCharacterNFT} />;
+      return (
+        <Arena
+          account={account}
+          characterNFT={characterNFT}
+          setCharacterNFT={setCharacterNFT}
+        />
+      );
     }
   };
 
@@ -106,6 +118,7 @@ const App = () => {
   };
 
   useEffect(() => {
+    setIsLoading(true);
     checkIfWalletIsConnected();
   }, []);
 
@@ -131,6 +144,7 @@ const App = () => {
       } else {
         console.log("No Character NFT Found");
       }
+      setIsLoading(false);
     };
 
     if (account) {

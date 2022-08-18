@@ -3,6 +3,7 @@ import { ethers } from "ethers";
 import { CONTRACT_ADDRESS, transformCharacterData } from "../../constants";
 import GameContract from "../../utils/GameContract.json";
 import "./Arena.css";
+import LoadingIndicator from "../LoadingIndicator";
 
 /* Pass in character NFT Metadata to show the character card in our UI */
 
@@ -13,24 +14,27 @@ const Arena = ({ characterNFT, setCharacterNFT, account }) => {
 
   const [boss, setBoss] = useState(null);
 
-  const [attackState, setAttackState] = useState('');
-
+  const [attackState, setAttackState] = useState("");
+  const [showToast, setShowToast] = useState(false);
   // attack action
 
   const attack = async () => {
-
     try {
-        if (gameContract) {
-            setAttackState('Attacking!');
-            console.log('Attacking boss...');
-            const attackTxn = await gameContract.attackBoss(); 
-            await attackTxn.wait(); 
-            console.log('attackTxn', attackTxn);
-            setAttackState('hit');
-        }
+      if (gameContract) {
+        setAttackState("Attacking!");
+        console.log("Attacking boss...");
+        const attackTxn = await gameContract.attackBoss();
+        await attackTxn.wait();
+        console.log("attackTxn", attackTxn);
+        setAttackState("hit");
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false);
+        }, 5000);
+      }
     } catch (e) {
-        console.error('Error attacking boss:', e);
-        setAttackState('');
+      console.error("Error attacking boss:", e);
+      setAttackState("");
     }
   };
 
@@ -65,50 +69,56 @@ const Arena = ({ characterNFT, setCharacterNFT, account }) => {
     /* logic when the attack event is fired */
 
     const onAttackComplete = (from, newBossHp, newPlayerHp) => {
-        const bossHp = newBossHp.toNumber();
-        const playerHp = newPlayerHp.toNumber();
-        const sender = from.toString();
+      const bossHp = newBossHp.toNumber();
+      const playerHp = newPlayerHp.toNumber();
+      const sender = from.toString();
 
-        console.log(`AttackComplete: Boss Hp: ${bossHp} Player Hp: ${playerHp}`);
+      console.log(`AttackComplete: Boss Hp: ${bossHp} Player Hp: ${playerHp}`);
 
+      /*
+       * If player is our own, update both player and boss Hp
+       */
+      if (account === sender.toLowerCase()) {
+        setBoss((prevState) => {
+          return { ...prevState, hp: bossHp };
+        });
+        setCharacterNFT((prevState) => {
+          return { ...prevState, hp: playerHp };
+        });
+      } else {
         /*
-        * If player is our own, update both player and boss Hp
-        */
-        if (account === sender.toLowerCase()) {
-
-          setBoss((prevState) => {
-              return { ...prevState, hp: bossHp };
-          });
-          setCharacterNFT((prevState) => {
-              return { ...prevState, hp: playerHp };
-          });
-        }
-        /*
-        * If player isn't ours, update boss Hp only
-        */
-        else {
-          setBoss((prevState) => {
-              return { ...prevState, hp: bossHp };
-          });
-        }
-    }
+         * If player isn't ours, update boss Hp only
+         */
+        setBoss((prevState) => {
+          return { ...prevState, hp: bossHp };
+        });
+      }
+    };
 
     if (gameContract) {
       // fetch boss
       fetchBoss();
-      gameContract.on('AttackComplete', onAttackComplete);
+      gameContract.on("AttackComplete", onAttackComplete);
     }
 
     return () => {
-        if (gameContract) {
-            gameContract.off('AttackComplete', onAttackComplete);
-        }
-    }
+      if (gameContract) {
+        gameContract.off("AttackComplete", onAttackComplete);
+      }
+    };
   }, [gameContract]);
 
   return (
     // boss
     <div className="arena-container">
+      {/* Add your toast HTML right here */}
+      {boss && characterNFT && (
+        <div id="toast" className={showToast ? "show" : ""}>
+          <div id="desc">{`💥 ${boss.name} was hit for ${characterNFT.attackDamage}!`}</div>
+        </div>
+      )}
+
+      {/* Boss */}
       {boss && (
         <div className="boss-container">
           <div className={`boss-content ${attackState}`}>
@@ -126,6 +136,12 @@ const Arena = ({ characterNFT, setCharacterNFT, account }) => {
               {`ATTACK ${boss.name}`}
             </button>
           </div>
+          {attackState === "attacking" && (
+            <div className="loading-indicator">
+              <LoadingIndicator />
+              <p>Attacking</p>
+            </div>
+          )}
         </div>
       )}
       {/* Character NFT */}
@@ -136,9 +152,10 @@ const Arena = ({ characterNFT, setCharacterNFT, account }) => {
             <div className="image-content">
               <h2>{characterNFT.name}</h2>
               <img
-                src={characterNFT.imageURI}
+                src={`https://ipfs.io/ipfs/${characterNFT.imageURI}`}
                 alt={`Character ${characterNFT.name}`}
               />
+
               <div className="health-bar">
                 <progress value={characterNFT.hp} max={characterNFT.maxHP} />
                 <p>{`${characterNFT.hp} / ${characterNFT.maxHP} HP`}</p>
